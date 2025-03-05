@@ -56,8 +56,8 @@ class Bola extends Entidade{
 
     constructor(x, y, largura, altura, velocidadex) {
         super(x, y, largura, altura, velocidadex);
-        this.velocidadex = -5;
-        this.#velocidadey = 5;
+        this.velocidadex = -3;
+        this.#velocidadey = 2;
         
     }
 
@@ -78,21 +78,60 @@ class Bola extends Entidade{
     
     paredeLaterais(){
         if(this.x >= canvas.width){
-            this.velocidadex = -5
+            this.velocidadex = -3
         }else if(this.x <= 0){
-            this.velocidadex = 5
+            this.velocidadex = this.velocidadex * - 1
         }
     }
 
     teto(){
         if(this.y <= 0){
-            this.#velocidadey = 5
+            this.#velocidadey = 2
         }
     }
 
     atualizar() {
         this.x += this.velocidadex;
         this.y += this.#velocidadey;
+    }
+}
+
+class Bloco extends Entidade{
+    constructor(x, y, largura, altura) {
+        super(x, y, largura, altura);
+        this.removido = false
+    }
+    desenhar(ctx) {
+        if (!this.removido){
+            ctx.fillStyle = 'yellow';
+            ctx.fillRect(this.x, this.y, this.largura, this.altura);
+        }
+    }
+}
+
+class Blocos{
+    constructor(largura, altura, linhas, colunas) {
+        this.blocos = [];
+        for (let i = 0; i < linhas; i++) {
+            for (let j = 0; j < colunas; j++) {
+                const x = j * (largura + margem);
+                const y = i * (altura + margem);
+                this.blocos.push(new Bloco(x, y, largura, altura));
+            }
+        }
+    }
+
+    desenhar(ctx){
+        this.blocos.forEach(bloco => bloco.desenhar(ctx));
+    }
+
+    verificarColisao(bola) {
+        this.blocos.forEach(bloco => {
+            if (!bloco.removido && bola.x < bloco.x + bloco.largura && bola.x + bola.largura > bloco.x && bola.y < bloco.y + bloco.altura && bola.y + bola.altura > bloco.y) {
+                bloco.removido = true;
+                bola.velocidadey =bola.velocidadey * -1;
+            }
+        });
     }
 }
 
@@ -107,19 +146,34 @@ document.addEventListener('keypress', (e) => {
 const plano = new Plano(canvas.width/2.4, 360, 60, 7)
 const bola = new Bola(190, 337, 10, 10)
 
-function loop(){
+const largura = 30;
+const altura = 30;
+const linhas = 3;
+const colunas = 8;
+const margem = 20
+const blocos = new Blocos(largura, altura, linhas, colunas);
 
-    bola.teto()
-    bola.paredeLaterais()
-    bola.final()
-    bola.colisaoRaquete()
+function loop(){    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    bola.desenhar(ctx, 'red')
-    bola.atualizar()
-    plano.parede()
+    blocos.desenhar(ctx);
+    blocos.verificarColisao(bola);
+    bola.teto();
+    bola.paredeLaterais();
+    bola.final();
+    bola.colisaoRaquete();
+    bola.atualizar();
+    bola.desenhar(ctx, 'red');
+    plano.parede();
     plano.atualizar();
-    plano.desenhar(ctx, 'white')
-    requestAnimationFrame(loop);
+    plano.desenhar(ctx, 'white');
+    if (!gameover) {
+        requestAnimationFrame(loop);
+    } else {
+        ctx.fillStyle = 'black';
+        ctx.font = '30px Arial';
+        ctx.fillText('Game Over', canvas.width / 2 - 70, canvas.height / 2);
+    }
     
 }
 
