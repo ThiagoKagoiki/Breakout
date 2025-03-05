@@ -71,8 +71,8 @@ class Bola extends Entidade{
 
     colisaoRaquete(){
         if(this.y + this.altura >= plano.altura + plano.y && this.x + this.largura >= plano.x && this.x <= plano.largura + plano.x && gameover == false){
-            this.#velocidadey = - 5
-            this.velocidadex = -5
+            this.#velocidadey = this.#velocidadey * -1
+            this.velocidadex = this.velocidadex * - 1
         }
     }
     
